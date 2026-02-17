@@ -1,0 +1,102 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "sisyphus": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "hephaestus": {
+      "model": "newapi/gpt-5.2",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "oracle": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "librarian": {
+      "model": "newapi/gpt-5.2",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "explore": {
+      "model": "newapi/gpt-5.2",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "multimodal-looker": {
+      "model": "newapi/gpt-5.2",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "prometheus": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "metis": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "momus": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "atlas": {
+      "model": "newapi/gpt-5.2",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    }
+  },
+  "categories": {
+    "visual-engineering": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "ultrabrain": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "deep": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "quick": {
+      "model": "newapi/gpt-5.2",
+      "reasoningEffort": "medium",
+      "textVerbosity": "low"
+    },
+    "unspecified-low": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    },
+    "unspecified-high": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "medium"
+    },
+    "writing": {
+      "model": "newapi/gpt-5.3-codex",
+      "reasoningEffort": "high",
+      "textVerbosity": "medium"
+    }
+  },
+  "background_task": {
+    "defaultConcurrency": 2,
+    "providerConcurrency": {
+      "newapi": 2
+    },
+    "modelConcurrency": {
+      "newapi/gpt-5.3-codex": 1,
+      "newapi/gpt-5.2": 2
+    }
+  }
+}

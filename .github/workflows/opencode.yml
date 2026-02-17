@@ -1,0 +1,66 @@
+name: opencode
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  opencode:
+    if: |
+      contains(github.event.comment.body, '/oc') ||
+      contains(github.event.comment.body, '/opencode')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Debug Parameters
+        env:
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "Debugging Parameters..."
+          echo "ANTHROPIC_BASE_URL (first 15): ${ANTHROPIC_BASE_URL:0:15}..."
+          echo "ANTHROPIC_API_KEY (first 10): ${ANTHROPIC_API_KEY:0:10}..."
+
+      - name: 🕵️ Debug Network (ANTHROPIC_BASE_URL)
+        shell: bash
+        env:
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL || env.ANTHROPIC_BASE_URL }}
+        run: |
+          echo "=== NETWORK DIAGNOSTICS ==="
+          
+          # 1. Check General Internet Access
+          echo "Testing external connectivity (google.com)..."
+          curl -I -m 5 https://google.com || echo "⚠️ WARNING: Google unreachable (Network might be restricted)"
+
+          # 2. Check ANTHROPIC_BASE_URL
+          echo "Testing ANTHROPIC_BASE_URL connectivity..."
+          
+          if [ -z "$ANTHROPIC_BASE_URL" ]; then
+            echo "❌ ERROR: ANTHROPIC_BASE_URL is not set or empty!"
+          else
+            echo "Target: $ANTHROPIC_BASE_URL"
+            # Use -v (verbose) to see handshake/SSL details
+            # Use -m 10 to force a timeout after 10 seconds (fail fast)
+            curl -v -m 10 "$ANTHROPIC_BASE_URL" || echo "❌ CONNECTION FAILED"
+          fi
+          
+          echo "=== END DIAGNOSTICS ==="
+
+      - name: Run OpenCode
+        uses: anomalyco/opencode/github@latest
+        env:
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        with:
+          model: anthropic/claude-sonnet-4-20250514
+          # share: true
+          # github_token: xxxx

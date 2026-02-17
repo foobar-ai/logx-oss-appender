@@ -98,8 +98,6 @@ target/
 .claude/
 .codex/
 .roomodes
-AGENTS.md
-CLAUDE.md
 dist/
 *.log.gz
 .sdkmanrc

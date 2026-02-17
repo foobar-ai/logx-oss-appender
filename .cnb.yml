@@ -1,0 +1,48 @@
+main:
+  push:
+    - services:
+        - docker
+      stages:
+        - name: docker build & push
+          script: |
+            docker buildx build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest --push .
+        - name: build knowledge base
+          image: cnbcool/knowledge-base
+          settings:
+            include:
+              - docs/*.md
+              - docs/*.txt
+  vscode:
+    - docker:
+        # 自定义开发环境
+        build: .ide/Dockerfile
+        # 指定开发环境镜像，可以是任意可访问的镜像。
+        # 如果 image 指定的镜像中已安装 code-server 代码服务，将使用单容器模式启动开发环境
+        # 如果 image 指定的镜像中未安装 code-server 代码服务，将使用双容器模式启动开发环境
+        # 如下镜像为 CNB 默认开发环境镜像，已安装代码服务，将使用单容器模式启动开发环境
+        # 可按需替换为其他镜像
+        #image: cnbcool/default-dev-env:latest
+        image: docker.cnb.cool/foobar-ai/logx-oss-appender:latest
+      services:
+        - vscode
+        - docker
+      # 在云原生引入环境变量
+      imports: https://cnb.cool/foobar-ai/envs/-/blob/main/ai-coding/envs.yml
+      stages:
+        - name: ls
+          script: ls -al && git remote add upstream https://github.com/foobar-ai/logx-oss-appender.git
+
+.npc: &npc
+  - runner:
+      cpus: 4
+    docker:
+      image: node:22
+    stages:
+      - name: run openclaw
+        image: docker.cnb.cool/bring/runners/clawdbotrunner
+
+dev:
+  vscode:
+    - services:
+        - vscode
+        - docker
