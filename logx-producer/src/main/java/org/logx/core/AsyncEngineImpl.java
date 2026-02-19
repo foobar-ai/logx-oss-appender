@@ -11,8 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -85,6 +88,7 @@ public class AsyncEngineImpl implements AsyncEngine, AutoCloseable {
                 .batchMaxBytes(config.getBatchMaxBytes())
                 .maxMessageAgeMs(config.getMaxMessageAgeMs())
                 .blockOnFull(config.isBlockOnFull())
+                .queueFullTimeoutMs(config.getQueueFullTimeoutMs())
                 .multiProducer(config.isMultiProducer())
                 .enableCompression(enableCompression)
                 .enableSharding(enableSharding)
@@ -265,7 +269,7 @@ public class AsyncEngineImpl implements AsyncEngine, AutoCloseable {
         String key = ObjectNameGenerator.generateObjectName(storageService.getKeyPrefix());
 
         if (uploadExecutor != null && !uploadExecutor.isShutdown()) {
-            uploadExecutor.submit(() -> {
+            Runnable uploadTask = () -> {
                 try {
                     storageService.putObject(key, batchData).get(config.getUploadTimeoutMs(), TimeUnit.MILLISECONDS);
                 } catch (Exception e) {
@@ -282,10 +286,30 @@ public class AsyncEngineImpl implements AsyncEngine, AutoCloseable {
                 } finally {
                     currentMemoryUsage.addAndGet(-originalSize);
                 }
-            });
-            return true;
+            };
+            return submitUploadTask(uploadTask, batchData, originalSize, key);
         } else {
             return onBatchSync(batchData, originalSize, compressed, messageCount, key);
+        }
+    }
+
+    private boolean submitUploadTask(Runnable task, byte[] batchData, int originalSize, String key) {
+        try {
+            uploadExecutor.execute(task);
+            return true;
+        } catch (RejectedExecutionException ex) {
+            logger.error("Upload task rejected for key {} due to bounded executor saturation", key, ex);
+            boolean fallbackSuccess = false;
+            try {
+                fallbackSuccess = fallbackManager.writeFallbackFile(batchData);
+            } catch (Exception fallbackEx) {
+                logger.error("Fallback write failed with exception for key {}: {}", key, fallbackEx.getMessage(), fallbackEx);
+            }
+            if (!fallbackSuccess) {
+                logger.error("[DATA_LOSS_ALERT] Upload task rejected and fallback failed for key {}", key);
+            }
+            currentMemoryUsage.addAndGet(-originalSize);
+            return false;
         }
     }
 
@@ -330,12 +354,20 @@ public class AsyncEngineImpl implements AsyncEngine, AutoCloseable {
     }
 
     private void startUploadExecutor() {
-        int threads = config.getParallelUploadThreads();
-        this.uploadExecutor = Executors.newFixedThreadPool(threads, r -> {
+        int threads = Math.max(1, config.getParallelUploadThreads());
+        int queueCapacity = Math.max(1, config.getQueueCapacityThreadPool());
+        this.uploadExecutor = new ThreadPoolExecutor(
+                threads,
+                threads,
+                60L,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(queueCapacity),
+                r -> {
             Thread t = new Thread(r, "parallel-uploader-" + System.currentTimeMillis());
             t.setDaemon(true);
             return t;
-        });
+        },
+                new ThreadPoolExecutor.AbortPolicy());
     }
 
     private void startQueuePressureMonitor() {
