@@ -221,6 +221,7 @@ public class LogxOssProperties {
         private boolean enableSharding = true;
         private int maxUploadSizeMb = 10;
         private int payloadMaxBytes = 512 * 1024;
+        private long queueFullTimeoutMs = AsyncEngineConfig.DEFAULT_QUEUE_FULL_TIMEOUT_MS;
         private AsyncEngineConfig.OversizePayloadPolicy oversizePayloadPolicy = AsyncEngineConfig.OversizePayloadPolicy.DROP;
         private int oversizeFallbackMaxBytes = 10 * 1024 * 1024;
 
@@ -350,6 +351,14 @@ public class LogxOssProperties {
 
         public void setPayloadMaxBytes(int payloadMaxBytes) {
             this.payloadMaxBytes = payloadMaxBytes;
+        }
+
+        public long getQueueFullTimeoutMs() {
+            return queueFullTimeoutMs;
+        }
+
+        public void setQueueFullTimeoutMs(long queueFullTimeoutMs) {
+            this.queueFullTimeoutMs = queueFullTimeoutMs;
         }
 
         public AsyncEngineConfig.OversizePayloadPolicy getOversizePayloadPolicy() {

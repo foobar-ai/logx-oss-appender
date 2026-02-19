@@ -2,6 +2,16 @@ package org.logx.core;
 
 public class AsyncEngineConfig {
 
+    public static final int MIN_QUEUE_CAPACITY = 1024;
+    public static final int MAX_QUEUE_CAPACITY = 1_048_576;
+    public static final int MIN_BATCH_MAX_BYTES = 64 * 1024;
+    public static final int MAX_BATCH_MAX_BYTES = 16 * 1024 * 1024;
+    public static final int MIN_PAYLOAD_MAX_BYTES = 1024;
+    public static final int MAX_PAYLOAD_MAX_BYTES = 1024 * 1024;
+    public static final int MIN_MAX_UPLOAD_SIZE_MB = 1;
+    public static final int MAX_MAX_UPLOAD_SIZE_MB = 64;
+    public static final long DEFAULT_QUEUE_FULL_TIMEOUT_MS = 5000L;
+
     public enum OversizePayloadPolicy {
         DROP,
         FALLBACK_FILE
@@ -37,6 +47,7 @@ public class AsyncEngineConfig {
     private int payloadMaxBytes = 512 * 1024;
     private OversizePayloadPolicy oversizePayloadPolicy = OversizePayloadPolicy.DROP;
     private int oversizeFallbackMaxBytes = 10 * 1024 * 1024;
+    private long queueFullTimeoutMs = DEFAULT_QUEUE_FULL_TIMEOUT_MS;
 
     public static AsyncEngineConfig defaultConfig() {
         return new AsyncEngineConfig();
@@ -56,7 +67,8 @@ public class AsyncEngineConfig {
     }
 
     public AsyncEngineConfig queueCapacity(int queueCapacity) {
-        this.queueCapacity = queueCapacity;
+        this.queueCapacity = requireRange("logx.oss.engine.queue.capacity", queueCapacity,
+                MIN_QUEUE_CAPACITY, MAX_QUEUE_CAPACITY);
         return this;
     }
 
@@ -74,7 +86,8 @@ public class AsyncEngineConfig {
     }
 
     public AsyncEngineConfig batchMaxBytes(int batchMaxBytes) {
-        this.batchMaxBytes = batchMaxBytes;
+        this.batchMaxBytes = requireRange("logx.oss.engine.batch.bytes", batchMaxBytes,
+                MIN_BATCH_MAX_BYTES, MAX_BATCH_MAX_BYTES);
         return this;
     }
 
@@ -290,7 +303,8 @@ public class AsyncEngineConfig {
     }
 
     public AsyncEngineConfig payloadMaxBytes(int payloadMaxBytes) {
-        this.payloadMaxBytes = payloadMaxBytes;
+        this.payloadMaxBytes = requireRange("logx.oss.engine.payloadMaxBytes", payloadMaxBytes,
+                MIN_PAYLOAD_MAX_BYTES, MAX_PAYLOAD_MAX_BYTES);
         return this;
     }
 
@@ -316,6 +330,15 @@ public class AsyncEngineConfig {
         return this;
     }
 
+    public long getQueueFullTimeoutMs() {
+        return queueFullTimeoutMs;
+    }
+
+    public AsyncEngineConfig queueFullTimeoutMs(long queueFullTimeoutMs) {
+        this.queueFullTimeoutMs = Math.max(1L, queueFullTimeoutMs);
+        return this;
+    }
+
     private org.logx.storage.StorageConfig storageConfig;
 
     public org.logx.storage.StorageConfig getStorageConfig() {
@@ -324,5 +347,13 @@ public class AsyncEngineConfig {
 
     public void setStorageConfig(org.logx.storage.StorageConfig storageConfig) {
         this.storageConfig = storageConfig;
+    }
+
+    private static int requireRange(String key, int value, int min, int max) {
+        if (value < min || value > max) {
+            throw new IllegalArgumentException(
+                    key + " out of range: " + value + ", expected [" + min + ", " + max + "]");
+        }
+        return value;
     }
 }
