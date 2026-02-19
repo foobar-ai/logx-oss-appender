@@ -231,6 +231,7 @@ public class ConfigConsistencyVerifier {
                 "logx.oss.engine.batch.count",
                 "logx.oss.engine.batch.maxAgeMs",
                 "logx.oss.engine.queue.capacity",
+                "logx.oss.engine.queue.fullTimeoutMs",
                 "logx.oss.engine.enableCompression"
         ));
 
