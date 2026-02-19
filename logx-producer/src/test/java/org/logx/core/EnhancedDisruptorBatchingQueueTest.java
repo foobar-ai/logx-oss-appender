@@ -5,8 +5,6 @@ import org.logx.storage.ProtocolType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -136,6 +134,41 @@ public class EnhancedDisruptorBatchingQueueTest {
         assertEquals(2, testConsumer.getMessageCount(), "Should have 2 messages in batch");
 
         testQueue.close();
+    }
+
+    @Test
+    void testQueueFullShouldTimeoutWhenBlocking() {
+        EnhancedDisruptorBatchingQueue.Config timeoutConfig = new EnhancedDisruptorBatchingQueue.Config()
+                .queueCapacity(1024)
+                .batchMaxMessages(1024)
+                .batchMaxBytes(1024 * 1024)
+                .maxMessageAgeMs(60_000)
+                .blockOnFull(true)
+                .queueFullTimeoutMs(20L);
+
+        EnhancedDisruptorBatchingQueue timeoutQueue =
+                new EnhancedDisruptorBatchingQueue(timeoutConfig, (batchData, originalSize, compressed, messageCount) -> {
+                    try {
+                        Thread.sleep(200L);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    return true;
+                }, new TestStorageService());
+
+        timeoutQueue.start();
+
+        byte[] payload = "x".getBytes();
+        boolean timeoutObserved = false;
+        for (int i = 0; i < 20000; i++) {
+            if (!timeoutQueue.submit(payload)) {
+                timeoutObserved = true;
+                break;
+            }
+        }
+
+        assertTrue(timeoutObserved, "Queue full with blockOnFull=true should timeout and return false");
+        timeoutQueue.close();
     }
 
     @Test
