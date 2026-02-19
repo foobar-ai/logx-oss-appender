@@ -83,6 +83,7 @@ public final class LogbackOSSAppender extends AppenderBase<ILoggingEvent> {
             engineConfig.batchMaxBytes(properties.getEngine().getBatch().getBytes());
             engineConfig.maxMessageAgeMs(properties.getEngine().getBatch().getMaxAgeMs());
             engineConfig.blockOnFull(!properties.getEngine().getQueue().isDropWhenFull());
+            engineConfig.queueFullTimeoutMs(properties.getEngine().getQueueFullTimeoutMs());
             engineConfig.uploadTimeoutMs(properties.getStorage().getUploadTimeoutMs());
             engineConfig.payloadMaxBytes(properties.getEngine().getPayloadMaxBytes());
             engineConfig.fallbackRetentionDays(properties.getEngine().getFallback().getRetentionDays());
@@ -155,6 +156,10 @@ public final class LogbackOSSAppender extends AppenderBase<ILoggingEvent> {
         }
         if (xmlConfig.containsKey("logx.oss.engine.queue.dropWhenFull")) {
             properties.getEngine().getQueue().setDropWhenFull(Boolean.parseBoolean(xmlConfig.get("logx.oss.engine.queue.dropWhenFull")));
+        }
+        if (xmlConfig.containsKey("logx.oss.engine.queue.fullTimeoutMs")) {
+            properties.getEngine().setQueueFullTimeoutMs(
+                    Long.parseLong(xmlConfig.get("logx.oss.engine.queue.fullTimeoutMs")));
         }
 
         // 引擎配置 - 重试
@@ -259,6 +264,10 @@ public final class LogbackOSSAppender extends AppenderBase<ILoggingEvent> {
 
     public void setDropWhenQueueFull(String dropWhenQueueFull) {
         xmlConfig.put("logx.oss.engine.queue.dropWhenFull", dropWhenQueueFull);
+    }
+
+    public void setQueueFullTimeoutMs(String queueFullTimeoutMs) {
+        xmlConfig.put("logx.oss.engine.queue.fullTimeoutMs", queueFullTimeoutMs);
     }
 
     public void setMaxRetries(String maxRetries) {
