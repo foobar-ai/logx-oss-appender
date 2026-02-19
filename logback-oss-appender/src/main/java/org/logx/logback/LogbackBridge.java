@@ -68,11 +68,11 @@ public class LogbackBridge extends AbstractUniversalAdapter {
         }
         
         try {
-            String logLine = convertEvent(event);
-            if (logLine != null) {
+            byte[] logData = convertEvent(event);
+            if (logData != null) {
                 int maxBytes = engineConfig != null ? engineConfig.getPayloadMaxBytes() : 512 * 1024;
                 LogPayloadSanitizer.SanitizedPayload sanitized =
-                        LogPayloadSanitizer.sanitize(logLine, maxBytes);
+                        LogPayloadSanitizer.sanitize(logData, maxBytes);
                 if (sanitized.sanitized || sanitized.truncated) {
                     logger.warn("Logback payload sanitized={}, truncated={}, originalBytes={}",
                             sanitized.sanitized, sanitized.truncated, sanitized.originalBytes);
@@ -87,7 +87,7 @@ public class LogbackBridge extends AbstractUniversalAdapter {
     /**
      * 将Logback事件转换为字符串
      */
-    private String convertEvent(Object event) {
+    private byte[] convertEvent(Object event) {
         if (!(event instanceof ILoggingEvent)) {
             return null;
         }
@@ -96,12 +96,13 @@ public class LogbackBridge extends AbstractUniversalAdapter {
         
         if (encoder != null) {
             try {
-                byte[] encoded = encoder.encode(loggingEvent);
-                return new String(encoded, java.nio.charset.StandardCharsets.UTF_8);
+                return encoder.encode(loggingEvent);
             } catch (Exception e) {
-                return loggingEvent.getFormattedMessage() + "\n";
+                return (loggingEvent.getFormattedMessage() + "\n")
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8);
             }
         }
-        return loggingEvent.getFormattedMessage() + "\n";
+        return (loggingEvent.getFormattedMessage() + "\n")
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 }

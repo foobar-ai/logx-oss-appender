@@ -69,10 +69,10 @@ public class Log4j2Bridge extends AbstractUniversalAdapter {
         }
         
         try {
-            String logLine = convertEvent(event);
-            if (logLine != null) {
+            byte[] logData = convertEvent(event);
+            if (logData != null) {
                 int maxBytes = engineConfig != null ? engineConfig.getPayloadMaxBytes() : 512 * 1024;
-                LogPayloadSanitizer.SanitizedPayload sanitized = LogPayloadSanitizer.sanitize(logLine, maxBytes);
+                LogPayloadSanitizer.SanitizedPayload sanitized = LogPayloadSanitizer.sanitize(logData, maxBytes);
                 if (sanitized.sanitized || sanitized.truncated) {
                     logger.warn("Log4j2 payload sanitized={}, truncated={}, originalBytes={}",
                             sanitized.sanitized, sanitized.truncated, sanitized.originalBytes);
@@ -87,7 +87,7 @@ public class Log4j2Bridge extends AbstractUniversalAdapter {
     /**
      * 将Log4j2事件转换为字符串
      */
-    private String convertEvent(Object event) {
+    private byte[] convertEvent(Object event) {
         if (!(event instanceof LogEvent)) {
             return null;
         }
@@ -96,11 +96,11 @@ public class Log4j2Bridge extends AbstractUniversalAdapter {
         
         // 使用Layout格式化日志
         if (layout != null) {
-            byte[] bytes = layout.toByteArray(logEvent);
-            return new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+            return layout.toByteArray(logEvent);
         } else {
             // 默认格式
-            return logEvent.getMessage().getFormattedMessage() + "\n";
+            return (logEvent.getMessage().getFormattedMessage() + "\n")
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8);
         }
     }
 }
