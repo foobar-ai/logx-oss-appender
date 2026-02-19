@@ -92,6 +92,7 @@ public final class Log4j2OSSAppender extends AbstractAppender {
             engineConfig.batchMaxBytes(properties.getEngine().getBatch().getBytes());
             engineConfig.maxMessageAgeMs(properties.getEngine().getBatch().getMaxAgeMs());
             engineConfig.blockOnFull(!properties.getEngine().getQueue().isDropWhenFull());
+            engineConfig.queueFullTimeoutMs(properties.getEngine().getQueueFullTimeoutMs());
             engineConfig.uploadTimeoutMs(properties.getStorage().getUploadTimeoutMs());
             engineConfig.payloadMaxBytes(properties.getEngine().getPayloadMaxBytes());
 
@@ -136,6 +137,10 @@ public final class Log4j2OSSAppender extends AbstractAppender {
         // Engine Queue Config
         xmlConfig.computeIfPresent("logx.oss.engine.queue.capacity", (k, v) -> { properties.getEngine().getQueue().setCapacity(Integer.parseInt(v)); return v; });
         xmlConfig.computeIfPresent("logx.oss.engine.queue.dropWhenFull", (k, v) -> { properties.getEngine().getQueue().setDropWhenFull(Boolean.parseBoolean(v)); return v; });
+        xmlConfig.computeIfPresent("logx.oss.engine.queue.fullTimeoutMs", (k, v) -> {
+            properties.getEngine().setQueueFullTimeoutMs(Long.parseLong(v));
+            return v;
+        });
 
         // Engine Retry Config
         xmlConfig.computeIfPresent("logx.oss.engine.retry.maxRetries", (k, v) -> { properties.getEngine().getRetry().setMaxRetries(Integer.parseInt(v)); return v; });
@@ -184,6 +189,7 @@ public final class Log4j2OSSAppender extends AbstractAppender {
     public void setMaxBatchBytes(String maxBatchBytes) { xmlConfig.put("logx.oss.engine.batch.bytes", maxBatchBytes); }
     public void setMaxMessageAgeMs(String maxMessageAgeMs) { xmlConfig.put("logx.oss.engine.batch.maxAgeMs", maxMessageAgeMs); }
     public void setDropWhenQueueFull(String dropWhenQueueFull) { xmlConfig.put("logx.oss.engine.queue.dropWhenFull", dropWhenQueueFull); }
+    public void setQueueFullTimeoutMs(String queueFullTimeoutMs) { xmlConfig.put("logx.oss.engine.queue.fullTimeoutMs", queueFullTimeoutMs); }
     public void setMaxRetries(String maxRetries) { xmlConfig.put("logx.oss.engine.retry.maxRetries", maxRetries); }
     public void setBaseBackoffMs(String baseBackoffMs) { xmlConfig.put("logx.oss.engine.retry.baseBackoffMs", baseBackoffMs); }
     public void setMaxBackoffMs(String maxBackoffMs) { xmlConfig.put("logx.oss.engine.retry.maxBackoffMs", maxBackoffMs); }

@@ -53,6 +53,8 @@ public class AsyncEngineConfigBuilder {
         config.fallbackMaxRetryBytesPerRound(configManager.getLongProperty(CONFIG_PREFIX + "fallback.max.retry.bytes.per.round", config.getFallbackMaxRetryBytesPerRound()));
         config.emergencyMemoryThresholdMb(configManager.getIntProperty(CONFIG_PREFIX + "emergency.memory.threshold.mb", config.getEmergencyMemoryThresholdMb()));
         config.uploadTimeoutMs(configManager.getLongProperty("logx.oss.storage.uploadTimeoutMs", config.getUploadTimeoutMs()));
+        config.queueFullTimeoutMs(configManager.getLongProperty(CONFIG_PREFIX + "queue.fullTimeoutMs",
+                config.getQueueFullTimeoutMs()));
 
         int payloadMaxBytes = configManager.getIntProperty(CONFIG_PREFIX + "payloadMaxBytes", config.getPayloadMaxBytes());
         payloadMaxBytes = configManager.getIntProperty(CONFIG_PREFIX + "payload.max.bytes", payloadMaxBytes);

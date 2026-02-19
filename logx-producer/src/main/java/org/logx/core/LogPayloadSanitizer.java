@@ -1,6 +1,7 @@
 package org.logx.core;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -22,27 +23,49 @@ public final class LogPayloadSanitizer {
             return new SanitizedPayload(new byte[0], false, false, 0);
         }
 
-        StringBuilder sb = new StringBuilder();
+        if (maxBytes <= 0) {
+            return new SanitizedPayload(new byte[0], false, input.length() > 0, 0);
+        }
+
+        byte[] source = input.getBytes(StandardCharsets.UTF_8);
+        return sanitize(source, maxBytes);
+    }
+
+    public static SanitizedPayload sanitize(byte[] input, int maxBytes) {
+        if (input == null || input.length == 0) {
+            return new SanitizedPayload(new byte[0], false, false, 0);
+        }
+
+        if (maxBytes <= 0) {
+            return new SanitizedPayload(new byte[0], false, true, input.length);
+        }
+
+        byte[] output = new byte[Math.min(maxBytes, input.length)];
+        int writeIndex = 0;
+        int originalBytes = input.length;
         boolean sanitized = false;
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            if (c == '\n' || c == '\t' || !Character.isISOControl(c)) {
-                sb.append(c);
-            } else {
-                sanitized = true;
-            }
-        }
-
-        byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
-        int originalBytes = bytes.length;
         boolean truncated = false;
-        if (bytes.length > maxBytes) {
-            byte[] truncatedBytes = new byte[maxBytes];
-            System.arraycopy(bytes, 0, truncatedBytes, 0, maxBytes);
-            bytes = truncatedBytes;
-            truncated = true;
+
+        for (int i = 0; i < input.length; i++) {
+            int unsigned = input[i] & 0xFF;
+            boolean control = unsigned < 0x20
+                    && unsigned != '\n'
+                    && unsigned != '\r'
+                    && unsigned != '\t';
+            if (control) {
+                sanitized = true;
+                continue;
+            }
+
+            if (writeIndex >= maxBytes) {
+                truncated = true;
+                break;
+            }
+            output[writeIndex] = input[i];
+            writeIndex++;
         }
 
+        byte[] result = Arrays.copyOf(output, writeIndex);
         if (sanitized) {
             sanitizedCount.incrementAndGet();
         }
@@ -50,7 +73,7 @@ public final class LogPayloadSanitizer {
             truncatedCount.incrementAndGet();
         }
 
-        return new SanitizedPayload(bytes, sanitized, truncated, originalBytes);
+        return new SanitizedPayload(result, sanitized, truncated, originalBytes);
     }
 
     public static final class SanitizedPayload {

@@ -60,6 +60,7 @@ public class LogxOssConfigResolver {
         resolveFallback(engine.getFallback());
         resolveThreadPool(engine.getThreadPool());
         resolveOtherEngineConfigs(engine);
+        validateEngineLimits(engine);
     }
 
     private void resolveBatch(LogxOssProperties.Batch batch) {
@@ -105,10 +106,34 @@ public class LogxOssConfigResolver {
         engine.setEnableSharding(configManager.getBooleanProperty("logx.oss.engine.enableSharding", engine.isEnableSharding()));
         engine.setMaxUploadSizeMb(configManager.getIntProperty("logx.oss.engine.maxUploadSizeMb", engine.getMaxUploadSizeMb()));
         engine.setPayloadMaxBytes(configManager.getIntProperty("logx.oss.engine.payloadMaxBytes", engine.getPayloadMaxBytes()));
+        engine.setQueueFullTimeoutMs(configManager.getLongProperty("logx.oss.engine.queue.fullTimeoutMs", engine.getQueueFullTimeoutMs()));
         String oversizePolicy = configManager.getProperty("logx.oss.engine.oversizePayloadPolicy", engine.getOversizePayloadPolicy().name());
         if (oversizePolicy != null) {
             engine.setOversizePayloadPolicy(AsyncEngineConfig.OversizePayloadPolicy.valueOf(oversizePolicy.trim().toUpperCase()));
         }
         engine.setOversizeFallbackMaxBytes(configManager.getIntProperty("logx.oss.engine.oversizeFallbackMaxBytes", engine.getOversizeFallbackMaxBytes()));
+    }
+
+    private static int requireRange(String key, int value, int min, int max) {
+        if (value < min || value > max) {
+            throw new IllegalArgumentException(
+                    key + " out of range: " + value + ", expected [" + min + ", " + max + "]");
+        }
+        return value;
+    }
+
+    private static void validateEngineLimits(LogxOssProperties.Engine engine) {
+        engine.getQueue().setCapacity(
+                requireRange("logx.oss.engine.queue.capacity", engine.getQueue().getCapacity(),
+                        AsyncEngineConfig.MIN_QUEUE_CAPACITY, AsyncEngineConfig.MAX_QUEUE_CAPACITY));
+        engine.getBatch().setBytes(
+                requireRange("logx.oss.engine.batch.bytes", engine.getBatch().getBytes(),
+                        AsyncEngineConfig.MIN_BATCH_MAX_BYTES, AsyncEngineConfig.MAX_BATCH_MAX_BYTES));
+        engine.setPayloadMaxBytes(
+                requireRange("logx.oss.engine.payloadMaxBytes", engine.getPayloadMaxBytes(),
+                        AsyncEngineConfig.MIN_PAYLOAD_MAX_BYTES, AsyncEngineConfig.MAX_PAYLOAD_MAX_BYTES));
+        engine.setMaxUploadSizeMb(
+                requireRange("logx.oss.engine.maxUploadSizeMb", engine.getMaxUploadSizeMb(),
+                        AsyncEngineConfig.MIN_MAX_UPLOAD_SIZE_MB, AsyncEngineConfig.MAX_MAX_UPLOAD_SIZE_MB));
     }
 }

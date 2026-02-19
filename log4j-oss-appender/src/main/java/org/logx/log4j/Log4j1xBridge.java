@@ -67,10 +67,10 @@ public class Log4j1xBridge extends AbstractUniversalAdapter {
         }
         
         try {
-            String logLine = convertEvent(event);
-            if (logLine != null) {
+            byte[] logData = convertEvent(event);
+            if (logData != null) {
                 int maxBytes = engineConfig != null ? engineConfig.getPayloadMaxBytes() : 512 * 1024;
-                LogPayloadSanitizer.SanitizedPayload sanitized = LogPayloadSanitizer.sanitize(logLine, maxBytes);
+                LogPayloadSanitizer.SanitizedPayload sanitized = LogPayloadSanitizer.sanitize(logData, maxBytes);
                 if (sanitized.sanitized || sanitized.truncated) {
                     logger.warn(String.format("Log4j1x payload sanitized=%s, truncated=%s, originalBytes=%d",
                             sanitized.sanitized, sanitized.truncated, sanitized.originalBytes));
@@ -85,7 +85,7 @@ public class Log4j1xBridge extends AbstractUniversalAdapter {
     /**
      * 将Log4j 1.x事件转换为字符串
      */
-    private String convertEvent(Object event) {
+    private byte[] convertEvent(Object event) {
         if (!(event instanceof LoggingEvent)) {
             return null;
         }
@@ -106,10 +106,11 @@ public class Log4j1xBridge extends AbstractUniversalAdapter {
                 }
             }
             
-            return sb.toString();
+            return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         } else {
             // 默认格式
-            return loggingEvent.getRenderedMessage() + Layout.LINE_SEP;
+            return (loggingEvent.getRenderedMessage() + Layout.LINE_SEP)
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8);
         }
     }
 }

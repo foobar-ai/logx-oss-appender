@@ -17,12 +17,15 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -81,8 +84,10 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
     private final AtomicLong totalDroppedMessages = new AtomicLong(0);
     private final AtomicLong lastDropLogTimeMs = new AtomicLong(0);
     private volatile java.util.concurrent.ExecutorService shardExecutor;
+    private volatile boolean shardExecutorOwned;
     private volatile long uploadTimeoutMs = 30000L;
     private final Object capacityMonitor = new Object();
+    private final Object shardExecutorMonitor = new Object();
 
     public EnhancedDisruptorBatchingQueue(Config config, BatchConsumer consumer, StorageService storageService) {
         this.config = config;
@@ -154,6 +159,7 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
         }
 
         long ts = System.currentTimeMillis();
+        long deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(config.queueFullTimeoutMs);
         while (true) {
             if (ringBuffer.hasAvailableCapacity(1)) {
                 long seq = ringBuffer.next();
@@ -179,9 +185,23 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
                 return false;
             }
 
+            long remainingMs = TimeUnit.NANOSECONDS.toMillis(deadlineNanos - System.nanoTime());
+            if (remainingMs <= 0) {
+                long drops = totalDroppedMessages.incrementAndGet();
+                long now = System.currentTimeMillis();
+                long lastLog = lastDropLogTimeMs.get();
+                if (now - lastLog > 1000 && lastDropLogTimeMs.compareAndSet(lastLog, now)) {
+                    double usage = getQueueUsageRatio();
+                    long fingerprint = fingerprintPayload(payload);
+                    logger.warn("[DATA_LOSS_ALERT] Queue full wait timeout. timeoutMs={}, totalDropped={}, queueUsage={}%, payloadFingerprint={}",
+                            config.queueFullTimeoutMs, drops, String.format("%.2f", usage * 100), fingerprint);
+                }
+                return false;
+            }
+
             try {
                 synchronized (capacityMonitor) {
-                    capacityMonitor.wait(5L);
+                    capacityMonitor.wait(Math.min(50L, remainingMs));
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -249,6 +269,7 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
         } finally {
             flushRequested.set(false);
             started = false;
+            shutdownOwnedShardExecutor();
             logger.info("Queue closed");
         }
     }
@@ -520,15 +541,9 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
                 return consumer.processBatch(data, data.length, false, 1);
             }
 
-            if (shardExecutor == null) {
-                logger.warn("Shard executor not configured, falling back to synchronous upload on consumer thread");
-            }
-
             int maxConcurrentUploads = config.getMaxConcurrentShardUploads();
             long overallDeadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(uploadTimeoutMs);
-            Executor executor = shardExecutor != null
-                    ? shardExecutor
-                    : java.util.concurrent.ForkJoinPool.commonPool();
+            Executor executor = getOrCreateShardExecutor(maxConcurrentUploads);
             Semaphore uploadSlots = new Semaphore(maxConcurrentUploads);
 
             for (int i = 0; i < shardCount; i++) {
@@ -579,6 +594,70 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
             logger.error("Sharding process failed: {}", e.getMessage(), e);
             windowFutures.forEach(future -> future.cancel(true));
             return false;
+        }
+    }
+
+    private Executor getOrCreateShardExecutor(int maxConcurrentUploads) {
+        java.util.concurrent.ExecutorService executor = shardExecutor;
+        if (executor != null) {
+            return executor;
+        }
+
+        synchronized (shardExecutorMonitor) {
+            executor = shardExecutor;
+            if (executor != null) {
+                return executor;
+            }
+
+            int threads = Math.max(1, maxConcurrentUploads);
+            ThreadFactory threadFactory = new ThreadFactory() {
+                private final AtomicLong counter = new AtomicLong(0);
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "shard-uploader-" + counter.incrementAndGet());
+                    t.setDaemon(true);
+                    t.setPriority(Thread.MIN_PRIORITY);
+                    return t;
+                }
+            };
+
+            ThreadPoolExecutor pool = new ThreadPoolExecutor(
+                    threads,
+                    threads,
+                    60L,
+                    TimeUnit.SECONDS,
+                    new ArrayBlockingQueue<>(threads),
+                    threadFactory,
+                    new ThreadPoolExecutor.CallerRunsPolicy());
+            pool.allowCoreThreadTimeOut(true);
+
+            shardExecutor = pool;
+            shardExecutorOwned = true;
+            return pool;
+        }
+    }
+
+    private void shutdownOwnedShardExecutor() {
+        if (!shardExecutorOwned) {
+            return;
+        }
+
+        java.util.concurrent.ExecutorService executor = shardExecutor;
+        if (executor == null) {
+            return;
+        }
+
+        try {
+            executor.shutdown();
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        } finally {
+            shardExecutorOwned = false;
         }
     }
 
@@ -654,8 +733,24 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
     }
 
     public void setShardExecutor(java.util.concurrent.ExecutorService shardExecutor, long uploadTimeoutMs) {
+        java.util.concurrent.ExecutorService previousExecutor = this.shardExecutor;
+        boolean previousOwned = this.shardExecutorOwned;
+
         this.shardExecutor = shardExecutor;
         this.uploadTimeoutMs = uploadTimeoutMs;
+        this.shardExecutorOwned = false;
+
+        if (previousOwned && previousExecutor != null && previousExecutor != shardExecutor) {
+            try {
+                previousExecutor.shutdown();
+                if (!previousExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    previousExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                previousExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private double getQueueUsageRatio() {
@@ -693,6 +788,7 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
         private int maxConcurrentShardUploads = 4;
         private java.util.concurrent.ExecutorService shardExecutor;
         private long uploadTimeoutMs = 30000L;
+        private long queueFullTimeoutMs = AsyncEngineConfig.DEFAULT_QUEUE_FULL_TIMEOUT_MS;
 
         public static Config defaultConfig() {
             return new Config();
@@ -763,6 +859,11 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
             return this;
         }
 
+        public Config queueFullTimeoutMs(long queueFullTimeoutMs) {
+            this.queueFullTimeoutMs = Math.max(1L, queueFullTimeoutMs);
+            return this;
+        }
+
         public int getQueueCapacity() {
             return queueCapacity;
         }
@@ -821,6 +922,10 @@ public final class EnhancedDisruptorBatchingQueue implements AutoCloseable {
 
         public long getUploadTimeoutMs() {
             return uploadTimeoutMs;
+        }
+
+        public long getQueueFullTimeoutMs() {
+            return queueFullTimeoutMs;
         }
     }
 

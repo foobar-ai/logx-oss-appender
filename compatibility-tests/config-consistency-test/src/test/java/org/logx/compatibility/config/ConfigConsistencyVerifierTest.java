@@ -80,7 +80,7 @@ public class ConfigConsistencyVerifierTest {
         
         // 验证报告不一致性 (Log4j1缺少9个参数)
         assertFalse("配置应该是不一致的", report.isConsistent());
-        assertEquals("应该检测到不一致的参数", 9, report.getInconsistentParameters().size());
+        assertEquals("应该检测到不一致的参数", 10, report.getInconsistentParameters().size());
     }
 
     @Test
@@ -111,8 +111,7 @@ public class ConfigConsistencyVerifierTest {
         ConfigConsistencyReport report = verifier.verifyParameterConsistency(
                 logbackConfig, log4j2Config, log4j1Config);
         
-        // 验证报告内容 (12个参数 × 3个框架 = 36个一致的参数)
-        assertEquals("应该有36个一致的参数", 36, report.getConsistentParameters().size());
+        assertEquals("应该有39个一致的参数", 39, report.getConsistentParameters().size());
         assertEquals("应该没有不一致的参数", 0, report.getInconsistentParameters().size());
     }
 
@@ -127,6 +126,7 @@ public class ConfigConsistencyVerifierTest {
         config.put("logx.oss.storage.accessKeySecret", "minioadmin");
         config.put("logx.oss.storage.endpoint", "http://localhost:9000");
         config.put("logx.oss.storage.ossType", "S3");
+        config.put("logx.oss.engine.queue.fullTimeoutMs", "5000");
         config.put("logx.oss.storage.pathStyleAccess", "true");
         config.put("logx.oss.storage.enableSsl", "false");
         config.put("logx.oss.storage.maxConnections", "50");
