@@ -95,7 +95,6 @@ vgcore.*
 target/
 .gemini/
 .iflow/
-.claude/
 .codex/
 .roomodes
 dist/
