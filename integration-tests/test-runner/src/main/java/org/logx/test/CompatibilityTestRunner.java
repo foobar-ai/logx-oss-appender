@@ -9,7 +9,7 @@ import java.util.concurrent.*;
  * 跨平台的兼容性测试运行器，支持Windows和Linux
  *
  * 功能：
- * 1. 运行所有compatibility-tests模块的测试
+ * 1. 运行所有integration-tests模块的测试
  * 2. 实时监控logs/application-error.log
  * 3. 发现错误日志立即停止测试并报告
  */
@@ -21,9 +21,9 @@ public class CompatibilityTestRunner {
         "multi-framework-test",
         "spring-boot-test",
         "spring-mvc-test",
-        "all-in-one-test/s3-all-in-one-logback-test",
-        "all-in-one-test/s3-all-in-one-log4j-test",
-        "all-in-one-test/s3-all-in-one-log4j2-test"
+        "distribution-test/s3-distribution-logback-test",
+        "distribution-test/s3-distribution-log4j-test",
+        "distribution-test/s3-distribution-log4j2-test"
     };
 
     private static final String ANSI_RESET = "\u001B[0m";
@@ -45,7 +45,7 @@ public class CompatibilityTestRunner {
     public static void main(String[] args) {
         Path rootPath = Paths.get(System.getProperty("user.dir"));
 
-        if (!Files.exists(rootPath.resolve("compatibility-tests"))) {
+        if (!Files.exists(rootPath.resolve("integration-tests"))) {
             rootPath = rootPath.getParent();
         }
 
@@ -70,8 +70,8 @@ public class CompatibilityTestRunner {
         for (String module : TEST_MODULES) {
             // 处理嵌套模块路径
             String cleanModulePath = module.replace("/", File.separator);
-            Path logDir = rootPath.resolve("compatibility-tests").resolve(cleanModulePath).resolve("logs");
-            Path logxDir = rootPath.resolve("compatibility-tests").resolve(cleanModulePath).resolve("logx");
+            Path logDir = rootPath.resolve("integration-tests").resolve(cleanModulePath).resolve("logs");
+            Path logxDir = rootPath.resolve("integration-tests").resolve(cleanModulePath).resolve("logx");
 
             if (Files.exists(logDir)) {
                 try {
@@ -132,7 +132,7 @@ public class CompatibilityTestRunner {
         for (String module : TEST_MODULES) {
             // 处理嵌套模块路径
             String cleanModulePath = module.replace("/", File.separator);
-            Path errorLog = rootPath.resolve("compatibility-tests")
+            Path errorLog = rootPath.resolve("integration-tests")
                 .resolve(cleanModulePath)
                 .resolve("logs")
                 .resolve("application-error.log");
@@ -180,7 +180,7 @@ public class CompatibilityTestRunner {
         System.out.println();
         System.out.println(ANSI_RED + "=====================================" + ANSI_RESET);
         System.out.println(ANSI_RED + "❌ 检测到真实错误日志!" + ANSI_RESET);
-        System.out.println(ANSI_RED + "模块: compatibility-tests/" + module + ANSI_RESET);
+        System.out.println(ANSI_RED + "模块: integration-tests/" + module + ANSI_RESET);
         System.out.println(ANSI_RED + "=====================================" + ANSI_RESET);
         System.out.println();
         System.out.println(ANSI_YELLOW + "真实错误日志内容（已过滤测试日志）:" + ANSI_RESET);
@@ -252,7 +252,7 @@ public class CompatibilityTestRunner {
             System.out.println(ANSI_RED + "=== ✗ 测试失败或发现错误日志 ===" + ANSI_RESET);
 
             if (errorModule != null) {
-                System.out.println(ANSI_RED + "错误位置: compatibility-tests/" + errorModule + "/logs/application-error.log" + ANSI_RESET);
+                System.out.println(ANSI_RED + "错误位置: integration-tests/" + errorModule + "/logs/application-error.log" + ANSI_RESET);
             }
 
             return 1;
@@ -267,7 +267,7 @@ public class CompatibilityTestRunner {
         for (String module : TEST_MODULES) {
             // 处理嵌套模块路径
             String cleanModulePath = module.replace("/", File.separator);
-            Path logxDir = rootPath.resolve("compatibility-tests")
+            Path logxDir = rootPath.resolve("integration-tests")
                 .resolve(cleanModulePath)
                 .resolve("logx");
 
@@ -309,7 +309,7 @@ public class CompatibilityTestRunner {
                 : "mvn";
 
             // 处理嵌套模块路径
-            String modulePath = "compatibility-tests/" + module;
+            String modulePath = "integration-tests/" + module;
 
             System.out.println(ANSI_YELLOW + "  执行命令: " + mvnCommand + " test -pl " + modulePath + ANSI_RESET);
 
@@ -365,7 +365,7 @@ public class CompatibilityTestRunner {
 
         // 处理嵌套模块路径
         String cleanModulePath = module.replace("/", File.separator);
-        Path errorLog = rootPath.resolve("compatibility-tests")
+        Path errorLog = rootPath.resolve("integration-tests")
             .resolve(cleanModulePath)
             .resolve("logs")
             .resolve("application-error.log");
@@ -403,7 +403,7 @@ public class CompatibilityTestRunner {
             System.out.println(ANSI_YELLOW + "未找到错误日志文件" + ANSI_RESET);
         }
 
-        Path surefireReports = rootPath.resolve("compatibility-tests")
+        Path surefireReports = rootPath.resolve("integration-tests")
             .resolve(cleanModulePath)
             .resolve("target")
             .resolve("surefire-reports");

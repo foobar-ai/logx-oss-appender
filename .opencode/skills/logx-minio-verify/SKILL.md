@@ -1,16 +1,16 @@
 ---
 name: logx-minio-verify
-description: 代码编写完成后执行全量集成验证（严格全量：MinIO + compatibility-tests + jdk21-test）
+description: 代码编写完成后执行全量集成验证（严格全量：MinIO + integration-tests + jdk21-test）
 license: MIT
 compatibility: Requires Java + Maven + Docker (or local MinIO).
 metadata:
   author: logx-project
-  version: "1.0"
+  version: “1.0”
 ---
 
 ## 目的
 
-统一“编码完成后的验证门禁”。
+统一”编码完成后的验证门禁”。
 
 **硬规则**：只要涉及代码改动，完成实现后必须执行本技能；未通过则视为变更未完成。
 
@@ -34,7 +34,7 @@ bash scripts/integration-verify.sh <quick|full>
 - `quick`：MinIO 可用 + `MinIOIntegrationTest` 通过
 - `full`：
   - MinIO 前置检查通过（endpoint、凭据、桶）
-  - `compatibility-tests/test-runner` 通过
+  - `integration-tests/test-runner` 通过
   - `jdk21-test` 覆盖并通过
 
 任一失败即 FAIL。
@@ -43,11 +43,11 @@ bash scripts/integration-verify.sh <quick|full>
 
 脚本会写入：
 
-`compatibility-tests/target/integration-verify/summary-<timestamp>.md`
+`integration-tests/target/integration-verify/summary-<timestamp>.md`
 
 并同时生成详细日志：
 
-`compatibility-tests/target/integration-verify/run-<timestamp>.log`
+`integration-tests/target/integration-verify/run-<timestamp>.log`
 
 ## 失败处置
 
