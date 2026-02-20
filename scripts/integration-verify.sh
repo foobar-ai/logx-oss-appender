@@ -194,7 +194,7 @@ java_major() {
 
 run_full_chain() {
     STAGE="全量兼容链路验证"
-    run_cmd "cd '$ROOT_DIR' && mvn compile exec:java -pl compatibility-tests/test-runner"
+    run_cmd "cd '$ROOT_DIR' && mvn compile exec:java -pl integration-tests/test-runner"
 
     local current_java_major
     current_java_major="$(java_major)"
