@@ -38,7 +38,7 @@
 ## 7. 验证构建和测试
 
 - [x] 7.1 运行 `mvn clean install` 验证所有模块构建成功
-- [ ] 7.2 运行 `mvn test` 验证所有测试通过
+- [x] 7.2 运行 `mvn test` 验证所有测试通过
 - [x] 7.3 检查 `target/` 目录中的 JAR 文件名是否保持不变
 - [x] 7.4 验证子模块的 `pom.xml` 中 `<artifactId>` 未被修改
 
