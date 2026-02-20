@@ -10,7 +10,7 @@ if [[ "$MODE" != "quick" && "$MODE" != "full" ]]; then
 fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPORT_DIR="$ROOT_DIR/compatibility-tests/target/integration-verify"
+REPORT_DIR="$ROOT_DIR/integration-tests/target/integration-verify"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 SUMMARY_FILE="$REPORT_DIR/summary-$TIMESTAMP.md"
 LOG_FILE="$REPORT_DIR/run-$TIMESTAMP.log"
@@ -130,8 +130,8 @@ ensure_minio_up() {
     fi
 
     log_warn "MinIO 未就绪，尝试使用 Docker 方式启动"
-    run_cmd "cd '$ROOT_DIR/compatibility-tests/minio/docker' && $compose_runner down -v >/dev/null 2>&1 || true"
-    run_cmd "cd '$ROOT_DIR/compatibility-tests/minio/docker' && $compose_runner up -d"
+    run_cmd "cd '$ROOT_DIR/integration-tests/minio/docker' && $compose_runner down -v >/dev/null 2>&1 || true"
+    run_cmd "cd '$ROOT_DIR/integration-tests/minio/docker' && $compose_runner up -d"
     run_cmd "curl -sf '$MINIO_ENDPOINT/minio/health/live' >/dev/null"
     MINIO_SOURCE="docker-compose"
 }
@@ -201,21 +201,21 @@ run_full_chain() {
 
     STAGE="jdk21-test 验证"
     if (( current_java_major >= 21 )); then
-        run_cmd "cd '$ROOT_DIR' && mvn clean test -pl compatibility-tests/jdk21-test"
+        run_cmd "cd '$ROOT_DIR' && mvn clean test -pl integration-tests/jdk21-test"
         JDK21_RUN_MODE="local-jdk21"
         return
     fi
 
     local endpoint_docker
     endpoint_docker="$(endpoint_for_docker_check "$MINIO_ENDPOINT")"
-    run_cmd "docker run --rm --add-host=host.docker.internal:host-gateway -e LOGX_OSS_STORAGE_ENDPOINT='$endpoint_docker' -e LOGX_OSS_STORAGE_ACCESS_KEY_ID='$MINIO_ACCESS_KEY' -e LOGX_OSS_STORAGE_ACCESS_KEY_SECRET='$MINIO_SECRET_KEY' -e LOGX_OSS_STORAGE_BUCKET='$MINIO_BUCKET' -v '$ROOT_DIR:/workspace' -w /workspace maven:3.9.6-eclipse-temurin-21 bash -lc 'mvn clean install -DskipTests && mvn clean test -pl compatibility-tests/jdk21-test'"
+    run_cmd "docker run --rm --add-host=host.docker.internal:host-gateway -e LOGX_OSS_STORAGE_ENDPOINT='$endpoint_docker' -e LOGX_OSS_STORAGE_ACCESS_KEY_ID='$MINIO_ACCESS_KEY' -e LOGX_OSS_STORAGE_ACCESS_KEY_SECRET='$MINIO_SECRET_KEY' -e LOGX_OSS_STORAGE_BUCKET='$MINIO_BUCKET' -v '$ROOT_DIR:/workspace' -w /workspace maven:3.9.6-eclipse-temurin-21 bash -lc 'mvn clean install -DskipTests && mvn clean test -pl integration-tests/jdk21-test'"
     JDK21_RUN_MODE="docker-jdk21"
 }
 
 collect_trace_paths() {
-    printf -- "- compatibility-tests/*/logs/application-error.log\n"
-    printf -- "- compatibility-tests/*/target/surefire-reports\n"
-    printf -- "- compatibility-tests/target/integration-verify/\n"
+    printf -- "- integration-tests/*/logs/application-error.log\n"
+    printf -- "- integration-tests/*/target/surefire-reports\n"
+    printf -- "- integration-tests/target/integration-verify/\n"
 }
 
 write_summary() {
@@ -238,8 +238,8 @@ write_summary() {
         if [[ "$MODE" == "quick" ]]; then
             printf -- "- logx-s3-adapter: MinIOIntegrationTest\n\n"
         else
-            printf -- "- compatibility-tests/test-runner（覆盖兼容链路）\n"
-            printf -- "- compatibility-tests/jdk21-test\n\n"
+            printf -- "- integration-tests/test-runner（覆盖兼容链路）\n"
+            printf -- "- integration-tests/jdk21-test\n\n"
         fi
 
         printf -- "## 已执行关键命令\n"
@@ -260,9 +260,9 @@ main() {
     run_cmd "mvn -v"
 
     require_file "$ROOT_DIR/pom.xml"
-    require_file "$ROOT_DIR/compatibility-tests/pom.xml"
-    require_file "$ROOT_DIR/compatibility-tests/minio/start-minio-local.sh"
-    require_file "$ROOT_DIR/compatibility-tests/minio/docker/start-minio-docker.sh"
+    require_file "$ROOT_DIR/integration-tests/pom.xml"
+    require_file "$ROOT_DIR/integration-tests/minio/start-minio-local.sh"
+    require_file "$ROOT_DIR/integration-tests/minio/docker/start-minio-docker.sh"
 
     detect_cloud_env
     run_prebuild

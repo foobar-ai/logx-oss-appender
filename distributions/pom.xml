@@ -11,11 +11,11 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>all-in-one</artifactId>
+    <artifactId>distributions</artifactId>
     <packaging>pom</packaging>
 
-    <name>All-in-One Integration Packages</name>
-    <description>All-in-One集成包父模块，包含各日志框架与S3兼容存储的完整打包方案</description>
+    <name>Distribution Packages</name>
+    <description>发行版打包父模块，包含各日志框架与云存储适配器的完整打包方案（支持 S3、阿里云 OSS、腾讯云 COS 等）</description>
 
     <modules>
         <module>s3-log4j-oss-appender</module>

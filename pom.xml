@@ -53,8 +53,8 @@
         <module>log4j-oss-appender</module>
         <module>log4j2-oss-appender</module>
         <module>logback-oss-appender</module>
-        <module>all-in-one</module>
-        <module>compatibility-tests</module>
+        <module>distributions</module>
+        <module>integration-tests</module>
     </modules>
 
     <!-- Dependency Management -->

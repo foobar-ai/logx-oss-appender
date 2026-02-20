@@ -14,13 +14,13 @@ LogX OSS Appender 为Java应用程序提供了一套完整的日志上传解决�
 - **[log4j2-oss-appender](log4j2-oss-appender)** - Log4j2版本的OSS Appender
 - **[logback-oss-appender](logback-oss-appender)** - Logback版本的OSS Appender
 
-### All-in-One集成包
+### 发行版打包
 
-适用于非Maven用户的开箱即用方案（位于`all-in-one/`目录）：
+适用于非Maven用户的开箱即用方案（位于`distributions/`目录）：
 
-- **[s3-log4j-oss-appender](all-in-one/s3-log4j-oss-appender)** - Log4j 1.x + S3适配器 + 所有依赖（~25MB Fat JAR）
-- **[s3-log4j2-oss-appender](all-in-one/s3-log4j2-oss-appender)** - Log4j2 + S3适配器 + 所有依赖（~25MB Fat JAR）
-- **[s3-logback-oss-appender](all-in-one/s3-logback-oss-appender)** - Logback + S3适配器 + 所有依赖（~25MB Fat JAR）
+- **[s3-log4j-oss-appender](distributions/s3-log4j-oss-appender)** - Log4j 1.x + S3适配器 + 所有依赖（~25MB Fat JAR）
+- **[s3-log4j2-oss-appender](distributions/s3-log4j2-oss-appender)** - Log4j2 + S3适配器 + 所有依赖（~25MB Fat JAR）
+- **[s3-logback-oss-appender](distributions/s3-logback-oss-appender)** - Logback + S3适配器 + 所有依赖（~25MB Fat JAR）
 
 所有模块都遵循统一的包命名规范和配置Key标准，确保系统的一致性和可维护性。
 
@@ -34,7 +34,7 @@ logx-oss-appender/
 ├── AGENTS.md                        # AI代理配置
 ├── .claude/                         # Claude Code配置目录
 ├── docs/                           # 项目文档目录
-├── compatibility-tests/            # 集成和兼容性测试模块（独立构建）
+├── integration-tests/            # 集成和兼容性测试模块（独立构建）
 │   ├── pom.xml                     # 集成测试父POM
 │   ├── spring-boot-test/           # Spring Boot集成和兼容性测试
 │   ├── spring-mvc-test/            # Spring MVC集成和兼容性测试
@@ -51,11 +51,11 @@ logx-oss-appender/
 │   └── src/main/java/              # Log4j2集成实现
 ├── logback-oss-appender/           # Logback OSS Appender
 │   └── src/main/java/              # Logback集成实现
-└── all-in-one/                     # All-in-One集成包（Fat JAR）
-    ├── pom.xml                     # All-in-One父POM
-    ├── s3-log4j-oss-appender/      # Log4j 1.x All-in-One包
-    ├── s3-log4j2-oss-appender/     # Log4j2 All-in-One包
-    └── s3-logback-oss-appender/    # Logback All-in-One包
+└── distributions/                     # 发行版打包（Fat JAR）
+    ├── pom.xml                     # 发行版父POM
+    ├── s3-log4j-oss-appender/      # Log4j 1.x 发行版包
+    ├── s3-log4j2-oss-appender/     # Log4j2 发行版包
+    └── s3-logback-oss-appender/    # Logback 发行版包
 ```
 
 
@@ -409,11 +409,11 @@ dependencies {
 
 #### 非Maven/Gradle项目依赖引入
 
-对于不使用Maven或Gradle的项目，推荐使用All-in-One Fat JAR包，开箱即用：
+对于不使用Maven或Gradle的项目，推荐使用发行版 Fat JAR包，开箱即用：
 
-##### 1. All-in-One Fat JAR（推荐）
+##### 1. 发行版 Fat JAR（推荐）
 
-从`all-in-one/`目录获取预编译的Fat JAR包，每个包包含所有必要的依赖（~25MB）：
+从`distributions/`目录获取预编译的Fat JAR包，每个包包含所有必要的依赖（~25MB）：
 
 - **s3-logback-oss-appender-1.0.0-SNAPSHOT.jar** - Logback + S3适配器 + 所有依赖
 - **s3-log4j2-oss-appender-1.0.0-SNAPSHOT.jar** - Log4j2 + S3适配器 + 所有依赖
@@ -631,10 +631,10 @@ logx-oss-appender/                     # 主仓库
 ├── log4j-oss-appender/          # Log4j集成模块
 ├── log4j2-oss-appender/         # Log4j2集成模块
 ├── logback-oss-appender/        # Logback集成模块
-├── all-in-one/                  # All-in-One集成包（Fat JAR）
-│   ├── s3-log4j-oss-appender/   # Log4j 1.x All-in-One包
-│   ├── s3-log4j2-oss-appender/  # Log4j2 All-in-One包
-│   └── s3-logback-oss-appender/ # Logback All-in-One包
+├── distributions/                  # 发行版打包（Fat JAR）
+│   ├── s3-log4j-oss-appender/   # Log4j 1.x 发行版包
+│   ├── s3-log4j2-oss-appender/  # Log4j2 发行版包
+│   └── s3-logback-oss-appender/ # Logback 发行版包
 └── pom.xml                      # 父POM文件
 ```
 
@@ -659,7 +659,7 @@ logback-oss-appender
 | **log4j-oss-appender** | Log4j 1.x框架适配器，实现OSSAppender | 依赖logx-producer |
 | **log4j2-oss-appender** | Log4j2框架适配器，支持插件配置 | 依赖logx-producer |
 | **logback-oss-appender** | Logback框架适配器，支持Spring Boot | 依赖logx-producer |
-| **all-in-one系列** | All-in-One集成包（Fat JAR），包含框架适配器 + S3适配器 + 所有传递依赖，开箱即用 | 依赖相应的框架适配器和logx-s3-adapter |
+| **distributions 系列** | 发行版打包（Fat JAR），包含框架适配器 + S3适配器 + 所有传递依赖，开箱即用 | 依赖相应的框架适配器和logx-s3-adapter |
 
 ### 项目管理
 
@@ -878,13 +878,13 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ### 测试模块说明
 
-- **[spring-boot-test](compatibility-tests/spring-boot-test/)** - Spring Boot框架集成测试
-- **[spring-mvc-test](compatibility-tests/spring-mvc-test/)** - Spring MVC框架集成测试
-- **[jsp-servlet-test](compatibility-tests/jsp-servlet-test/)** - JSP/Servlet传统应用集成测试
-- **[multi-framework-test](compatibility-tests/multi-framework-test/)** - 多日志框架共存兼容性测试
+- **[spring-boot-test](integration-tests/spring-boot-test/)** - Spring Boot框架集成测试
+- **[spring-mvc-test](integration-tests/spring-mvc-test/)** - Spring MVC框架集成测试
+- **[jsp-servlet-test](integration-tests/jsp-servlet-test/)** - JSP/Servlet传统应用集成测试
+- **[multi-framework-test](integration-tests/multi-framework-test/)** - 多日志框架共存兼容性测试
   - 支持 Logback、Log4j2、Log4j 1.x (1.2.17) 多框架并存
   - 验证框架间配置隔离和资源竞争处理
-- **[config-consistency-test](compatibility-tests/config-consistency-test/)** - 配置一致性验证工具
+- **[config-consistency-test](integration-tests/config-consistency-test/)** - 配置一致性验证工具
   - 使用 Jackson YAML (2.15.3) 解析配置文件
   - 验证各框架配置参数的一致性
 
@@ -892,7 +892,7 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ```bash
 # 进入测试目录
-cd compatibility-tests
+cd integration-tests
 
 # 编译所有测试模块
 mvn clean compile
@@ -911,14 +911,14 @@ mvn clean test -pl multi-framework-test
 # quick: 快速验证（MinIO核心链路）
 bash scripts/integration-verify.sh quick
 
-# full: 严格全量（MinIO + compatibility-tests/test-runner + jdk21-test）
-# 仅 full 通过才可视为“实现完成”
+# full: 严格全量（MinIO + integration-tests/test-runner + jdk21-test）
+# 仅 full 通过才可视为”实现完成”
 bash scripts/integration-verify.sh full
 ```
 
 通过标准：
 - quick 模式：MinIO 可用 + MinIOIntegrationTest 通过
-- full 模式：quick 通过 + compatibility-tests/test-runner 通过 + jdk21-test 通过
+- full 模式：quick 通过 + integration-tests/test-runner 通过 + jdk21-test 通过
 - 任一必选项失败或未覆盖：FAIL（不允许进入完成状态）
 
 ### 测试环境要求
@@ -927,7 +927,7 @@ bash scripts/integration-verify.sh full
 - Maven 3.6+
 - MinIO 环境（按各测试模块README配置）
 
-详细说明请参考 [兼容性测试文档](compatibility-tests/README.md)。
+详细说明请参考 [兼容性测试文档](integration-tests/README.md)。
 
 ## 开发
 

@@ -6,11 +6,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.logx</groupId>
-    <artifactId>integration-compatibility-tests-parent</artifactId>
+    <artifactId>integration-tests-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>LogX OSS Appender Integration and Compatibility Tests Parent</name>
+    <name>LogX OSS Appender Integration Tests Parent</name>
     <description>Parent POM for all LogX OSS Appender integration and compatibility tests</description>
 
     <modules>
