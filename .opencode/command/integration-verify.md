@@ -31,3 +31,12 @@ bash scripts/integration-verify.sh <mode>
 脚本会输出标准化摘要并写入：
 
 `integration-tests/target/integration-verify/summary-<timestamp>.md`
+
+摘要必须包含：
+- 模式（quick/full）
+- 云环境识别结果
+- 9001 端口转发地址（若可推断）
+- MinIO 来源（已运行/自动拉起）
+- MinIOIntegrationTest / test-runner / jdk21-test 结果
+- bucket 校验结果
+- 总结论 PASS/FAIL

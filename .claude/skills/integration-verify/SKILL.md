@@ -1,5 +1,5 @@
 ---
-name: logx-minio-verify
+name: integration-verify
 description: 代码编写完成后执行全量集成验证（严格全量：MinIO + integration-tests + jdk21-test）
 license: MIT
 compatibility: Requires Java 8 + Maven + Docker (including docker-compose).
