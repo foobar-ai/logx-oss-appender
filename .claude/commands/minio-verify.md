@@ -15,6 +15,13 @@ description: 一键验证全量集成测试链路（严格全量，含 MinIO 与
 - `quick`：MinIO 可用性 + `MinIOIntegrationTest`
 - `full`：在 `quick` 基础上追加 `integration-tests/test-runner` 与 `jdk21-test`
 
+## 环境说明
+
+- 项目默认 Java 8（sdkman `.sdkmanrc`），Docker 必须可用
+- MinIO：脚本自动检测，未运行时自动 `docker-compose up -d` 拉起
+- jdk21-test：默认走 `docker run maven:3.9.6-eclipse-temurin-21`；本地手动 `sdk use java 21` 后可跳过 Docker
+- CI（GitHub Actions ubuntu-latest）与本地行为一致
+
 ## 执行命令
 
 ```bash
