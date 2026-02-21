@@ -127,7 +127,7 @@ sdk use java 8.0.462.fx-zulu
 java -version
 
 # 运行兼容性测试
-cd compatibility-tests
+cd integration-tests
 mvn clean test
 ```
 
@@ -141,7 +141,7 @@ sdk use java 21.0.8.crac-zulu
 java -version
 
 # 运行JDK 21兼容性测试
-sdk use java 21.0.8.crac-zulu && cd compatibility-tests && mvn clean test -pl jdk21-test
+sdk use java 21.0.8.crac-zulu && cd integration-tests && mvn clean test -pl jdk21-test
 ```
 
 ## 注意事项

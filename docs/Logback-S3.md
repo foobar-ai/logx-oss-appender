@@ -16,7 +16,7 @@ LogX OSS Appender提供开箱即用的All-in-One集成包，每个包约25MB，�
 
 ### 1. 获取All-in-One JAR包
 
-从项目的`all-in-one/s3-logback-oss-appender/target/`目录获取预编译的Fat JAR包：
+从项目的`distributions/s3-logback-oss-appender/target/`目录获取预编译的Fat JAR包：
 
 ```
 s3-logback-oss-appender-1.0.0-SNAPSHOT.jar  (~25MB)

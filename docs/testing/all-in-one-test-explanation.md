@@ -7,7 +7,7 @@ All-in-One JAR是为非Maven项目用户提供的集成包，包含框架适配�
 ## 测试目录结构
 
 ```
-compatibility-tests/all-in-one-test/
+integration-tests/distribution-test/
 ├── s3-all-in-one-log4j2-test/      # Log4j2 All-in-One测试
 ├── s3-all-in-one-logback-test/     # Logback All-in-One测试
 └── s3-all-in-one-log4j-test/       # Log4j 1.x All-in-One测试
@@ -31,13 +31,13 @@ All-in-One测试使用标准的Maven项目依赖，直接引用构建生成的Al
 #### 推荐方式（命令行）
 ```bash
 # 运行单个all-in-one测试模块
-mvn test -pl compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test
+mvn test -pl integration-tests/distribution-test/s3-all-in-one-log4j2-test
 
 # 运行所有all-in-one测试
-mvn test -pl compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test,compatibility-tests/all-in-one-test/s3-all-in-one-logback-test,compatibility-tests/all-in-one-test/s3-all-in-one-log4j-test
+mvn test -pl integration-tests/distribution-test/s3-all-in-one-log4j2-test,integration-tests/distribution-test/s3-all-in-one-logback-test,integration-tests/distribution-test/s3-all-in-one-log4j-test
 
 # 运行特定测试类
-mvn test -Dtest=Log4j2AllInOneTest -pl compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test
+mvn test -Dtest=Log4j2AllInOneTest -pl integration-tests/distribution-test/s3-all-in-one-log4j2-test
 ```
 
 #### 构建依赖准备
@@ -48,7 +48,7 @@ mvn test -Dtest=Log4j2AllInOneTest -pl compatibility-tests/all-in-one-test/s3-al
 mvn clean install -DskipTests
 
 # 或仅构建all-in-one模块
-mvn clean install -pl all-in-one/s3-log4j2-oss-appender -DskipTests
+mvn clean install -pl distributions/s3-log4j2-oss-appender -DskipTests
 ```
 
 ## 测试类型
@@ -96,7 +96,7 @@ logx.oss.storage.region=${LOGX_OSS_STORAGE_REGION:ap-guangzhou}
 logx.oss.storage.accessKeyId=${LOGX_OSS_STORAGE_ACCESS_KEY_ID:minioadmin}
 logx.oss.storage.accessKeySecret=${LOGX_OSS_STORAGE_ACCESS_KEY_SECRET:minioadmin}
 logx.oss.storage.bucket=${LOGX_OSS_STORAGE_BUCKET:logx-test-bucket}
-logx.oss.storage.keyPrefix=${LOGX_OSS_STORAGE_KEY_PREFIX:all-in-one-test/}
+logx.oss.storage.keyPrefix=${LOGX_OSS_STORAGE_KEY_PREFIX:distribution-test/}
 logx.oss.storage.ossType=${LOGX_OSS_STORAGE_OSS_TYPE:MINIO}
 
 # MinIO特定配置

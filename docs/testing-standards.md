@@ -190,7 +190,7 @@ grep -r "keyPrefix.*=" src/test/resources/
 
 本文档适用于：
 - 所有单元测试 (`src/test/java/**/*.java`)
-- 所有集成测试 (`compatibility-tests/**/*.java`)
+- 所有集成测试 (`integration-tests/**/*.java`)
 - 所有测试配置文件 (`src/test/resources/**/*.properties`)
 - 所有环境变量配置示例
 

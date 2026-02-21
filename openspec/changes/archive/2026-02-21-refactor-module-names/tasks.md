@@ -18,7 +18,7 @@
 - [x] 3.1 更新 `README.md` 中所有 `all-in-one/` 路径引用为 `distributions/`
 - [x] 3.2 更新 `README.md` 中所有 `compatibility-tests/` 路径引用为 `integration-tests/`
 - [x] 3.3 更新 `README.md` 中所有描述性文字（如"All-in-One集成包"等）
-- [ ] 3.4 检查其他 markdown 文档（如 `AGENTS.md`、`docs/` 目录）是否有引用需要更新
+- [x] 3.4 检查其他 markdown 文档（如 `AGENTS.md`、`docs/` 目录）是否有引用需要更新
 
 ## 4. 更新构建脚本
 
@@ -51,4 +51,4 @@
 
 - [x] 9.1 使用 `grep -r "all-in-one" .` 搜索是否有遗漏的引用（排除 `.git/` 和 `target/`）
 - [x] 9.2 使用 `grep -r "compatibility-tests" .` 搜索是否有遗漏的引用（排除 `.git/` 和 `target/`）
-- [ ] 9.3 在 IDE 中重新导入 Maven 项目，确认模块识别正常
+- [x] 9.3 在 IDE 中重新导入 Maven 项目，确认模块识别正常

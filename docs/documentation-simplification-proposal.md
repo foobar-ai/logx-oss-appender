@@ -8,7 +8,7 @@
 - CLAUDE.md：460行左右
 - 各模块README：6个（每个100-300行）
 - docs目录：10+个架构和过程文档
-- compatibility-tests：5+个测试模块文档
+- integration-tests：5+个测试模块文档
 
 ### 主要问题点
 

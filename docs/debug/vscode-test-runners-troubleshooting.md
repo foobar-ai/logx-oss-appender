@@ -17,7 +17,7 @@ All-in-One测试模块使用了标准项目依赖，这类依赖需要确保所�
 
 ### 技术细节
 
-**All-in-One测试模块**（位于 `compatibility-tests/all-in-one-test/`）:
+**All-in-One测试模块**（位于 `integration-tests/distribution-test/`）:
 ```xml
 <dependency>
     <groupId>org.logx</groupId>
@@ -26,7 +26,7 @@ All-in-One测试模块使用了标准项目依赖，这类依赖需要确保所�
 </dependency>
 ```
 
-**常规测试模块**（位于 `compatibility-tests/spring-boot-test/`）:
+**常规测试模块**（位于 `integration-tests/spring-boot-test/`）:
 ```xml
 <dependency>
     <groupId>org.logx</groupId>
@@ -40,10 +40,10 @@ All-in-One测试模块使用了标准项目依赖，这类依赖需要确保所�
 
 ```bash
 # 运行单个all-in-one测试模块
-mvn test -pl compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test
+mvn test -pl integration-tests/distribution-test/s3-all-in-one-log4j2-test
 
 # 运行所有all-in-one测试
-mvn test -pl compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test,compatibility-tests/all-in-one-test/s3-all-in-one-logback-test,compatibility-tests/all-in-one-test/s3-all-in-one-log4j-test
+mvn test -pl integration-tests/distribution-test/s3-all-in-one-log4j2-test,integration-tests/distribution-test/s3-all-in-one-logback-test,integration-tests/distribution-test/s3-all-in-one-log4j-test
 ```
 
 #### 方法2：构建项目确保JAR存在
@@ -65,16 +65,16 @@ mvn clean install -DskipTests
     "request": "launch",
     "mainClass": "org.logx.compatibility.s3.allinone.Log4j2AllInOneTest",
     "projectName": "s3-all-in-one-log4j2-integration-test",
-    "vmArgs": "-Djava.library.path=/path/to/project/compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test/lib"
+    "vmArgs": "-Djava.library.path=/path/to/project/integration-tests/distribution-test/s3-all-in-one-log4j2-test/lib"
 }
 ```
 
 ### 验证步骤
 
-1. 确保MinIO服务正在运行（参考 `compatibility-tests/minio/README-MINIO.md`）
+1. 确保MinIO服务正在运行（参考 `integration-tests/minio/README-MINIO.md`）
 2. 使用命令行运行测试，确认功能正常：
    ```bash
-   mvn test -Dtest=Log4j2AllInOneTest -pl compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test
+   mvn test -Dtest=Log4j2AllInOneTest -pl integration-tests/distribution-test/s3-all-in-one-log4j2-test
    ```
 3. 监控MinIO控制台确认日志成功上传
 
@@ -87,6 +87,6 @@ mvn clean install -DskipTests
 
 ### 相关文件
 
-- `compatibility-tests/all-in-one-test/s3-all-in-one-log4j2-test/pom.xml`
-- `compatibility-tests/all-in-one-test/s3-all-in-one-logback-test/pom.xml`
-- `compatibility-tests/all-in-one-test/s3-all-in-one-log4j-test/pom.xml`
+- `integration-tests/distribution-test/s3-all-in-one-log4j2-test/pom.xml`
+- `integration-tests/distribution-test/s3-all-in-one-logback-test/pom.xml`
+- `integration-tests/distribution-test/s3-all-in-one-log4j-test/pom.xml`
