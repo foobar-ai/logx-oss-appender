@@ -56,9 +56,9 @@ nfr_validation:
 recommendations:
   immediate:
     - action: "Enhance test coverage for all compatibility test modules"
-      refs: ["compatibility-tests/*/src/test"]
+      refs: ["integration-tests/*/src/test"]
     - action: "Implement proper integration tests for multi-framework coexistence verification"
-      refs: ["compatibility-tests/multi-framework-test/src/test"]
+      refs: ["integration-tests/multi-framework-test/src/test"]
   future:
     - action: "Add performance benchmark execution and reporting"
-      refs: ["compatibility-tests/performance-test"]
+      refs: ["integration-tests/performance-test"]
