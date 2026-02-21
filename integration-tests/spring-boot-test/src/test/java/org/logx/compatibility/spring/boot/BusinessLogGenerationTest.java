@@ -330,7 +330,7 @@ public class BusinessLogGenerationTest {
             }
 
             if (i % 10 == 0) {
-                logger.error("OSS上传测试错误日志 #{} - 这是一条ERROR级别的测试日志", i);
+                logger.warn("OSS上传测试错误日志 #{} - 这是一条WARN级别的测试日志", i);
             }
 
             // 短暂延迟

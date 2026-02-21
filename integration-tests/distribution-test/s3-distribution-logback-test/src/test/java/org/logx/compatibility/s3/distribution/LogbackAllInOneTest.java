@@ -40,7 +40,7 @@ public class LogbackAllInOneTest {
             }
 
             if (i % 10 == 0) {
-                logger.error("All-in-One错误日志 #{} - 这是一条ERROR级别的测试日志", i);
+                logger.warn("All-in-One错误日志 #{} - 这是一条WARN级别的测试日志", i);
             }
 
             // 短暂延迟

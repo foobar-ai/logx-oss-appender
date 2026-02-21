@@ -174,7 +174,7 @@ public class BusinessLogGenerationTest {
                             "[%s] OSS diagnostic warning #%d - slow upload detected", framework, i));
                 }
                 if (i % 10 == 0) {
-                    logger.error(String.format(Locale.US,
+                    logger.warn(String.format(Locale.US,
                             "[%s] OSS diagnostic error #%d - 测试错误日志: temporary credential issue", framework, i));
                 }
                 TimeUnit.MILLISECONDS.sleep(60);

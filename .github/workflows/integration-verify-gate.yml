@@ -35,7 +35,7 @@ jobs:
           path: |
             integration-tests/target/integration-verify/*.md
             integration-tests/target/integration-verify/*.log
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Upload compatibility logs
         if: always()
@@ -45,4 +45,4 @@ jobs:
           path: |
             integration-tests/**/logs/**
             integration-tests/**/target/surefire-reports/**
-          if-no-files-found: warn
+          if-no-files-found: error
