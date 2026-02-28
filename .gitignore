@@ -103,3 +103,4 @@ dist/
 
 application.log.*
 
+.claude/settings.local.json.bak
